@@ -1,0 +1,67 @@
+===========================
+CommonMark Grammar (Simplified)
+===========================
+
+Note: This is a simplified version of the CommonMark specification and does not
+cover all edge cases. It is intended as a reference for building the Markdown compiler.
+
+-------------------------------------------------
+Document
+-------------------------------------------------
+Document         ::= (Block)+
+
+-------------------------------------------------
+Block Elements
+-------------------------------------------------
+Block            ::= Heading | Paragraph | Blockquote | List | CodeBlock | ThematicBreak | HTMLBlock
+
+Heading          ::= AtxHeading | SetextHeading
+
+AtxHeading       ::= ('#'+ ' ' Inline+ Newline)
+SetextHeading    ::= Inline+ Newline (('=' | '-')+ Newline)
+
+Paragraph        ::= Inline+ Newline
+
+Blockquote       ::= ('>' ' ' Inline+ Newline)+
+
+List             ::= (ListItem)+
+ListItem         ::= ('-' | '*' | '+') ' ' Inline+ Newline
+
+CodeBlock        ::= (Indentation CodeLine Newline)+
+CodeLine         ::= (Text)*
+
+ThematicBreak    ::= ('***' | '---' | '___') Newline
+
+HTMLBlock        ::= (HTML)*
+
+-------------------------------------------------
+Inline Elements
+-------------------------------------------------
+Inline           ::= Emphasis | Strong | CodeSpan | Link | Image | Text
+
+Emphasis         ::= '*' Inline+ '*' | '_' Inline+ '_'
+Strong           ::= '**' Inline+ '**' | '__' Inline+ '__'
+CodeSpan         ::= '`' (CodeText)+ '`'
+
+Link             ::= '[' Inline+ ']' '(' Url ( ' ' Title )? ')'
+Image            ::= '![' Inline* ']' '(' Url ( ' ' Title )? ')'
+
+Text             ::= Any character sequence that does not form another inline element
+
+-------------------------------------------------
+Terminals
+-------------------------------------------------
+Newline          ::= '\n'
+Indentation      ::= ( ' ' ){4}
+Url              ::= (non-space characters)
+Title            ::= ('"' Inline+ '"') | ("'" Inline+ "'") | ('(' Inline+ ')')
+HTML             ::= '<' ... '>'   (as per HTML specification)
+
+-------------------------------------------------
+Comments:
+-------------------------------------------------
+- This grammar is a high-level overview and omits several details and edge cases.
+- For complete details, refer to the official CommonMark spec at:
+  https://spec.commonmark.org/
+
+===========================

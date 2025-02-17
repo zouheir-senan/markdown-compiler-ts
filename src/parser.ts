@@ -13,17 +13,17 @@ export function parse(tokens: Token[]): ASTNode {
         const token = tokens[pos];
         if (!token) return null;
 
-        if (token.type === TokenType.HEADING) {
-            // Consume heading token and following text tokens until newline
-            const headingToken = nextToken();
-            let content = "";
-            while (tokens[pos] && tokens[pos].type !== TokenType.NEWLINE) {
-                content += nextToken().value;
-            }
-            // Skip the newline
-            if (tokens[pos] && tokens[pos].type === TokenType.NEWLINE) nextToken();
-            return { type: "heading", value: content.trim() };
-        }
+        // if (token.type === TokenType.HEADING) {
+        //     // Consume heading token and following text tokens until newline
+        //     const headingToken = nextToken();
+        //     let content = "";
+        //     while (tokens[pos] && tokens[pos].type !== TokenType.NEWLINE) {
+        //         content += nextToken().value;
+        //     }
+        //     // Skip the newline
+        //     if (tokens[pos] && tokens[pos].type === TokenType.NEWLINE) nextToken();
+        //     return { type: "heading", value: content.trim() };
+        // }
         // Fallback: parse a paragraph
         let paragraph = "";
         while (tokens[pos] && tokens[pos].type !== TokenType.NEWLINE && tokens[pos].type !== TokenType.EOF) {

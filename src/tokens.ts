@@ -22,7 +22,7 @@ export enum TokenType {
     RBRACKET,           // "]"
     LPAREN,             // "("
     RPAREN,             // ")"
-
+    EMOJI_TEXT,
     // Emoji-specific tokens
     CUSTOM_EMOJI_PREFIX, // Literal "customEmoji:" in an emoji token
     NUMBER,              // One or more digits (for the emoji id)

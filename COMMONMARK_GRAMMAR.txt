@@ -1,67 +1,28 @@
-===========================
-CommonMark Grammar (Simplified)
-===========================
-
-Note: This is a simplified version of the CommonMark specification and does not
-cover all edge cases. It is intended as a reference for building the Markdown compiler.
-
--------------------------------------------------
-Document
--------------------------------------------------
-Document         ::= (Block)+
-
--------------------------------------------------
-Block Elements
--------------------------------------------------
-Block            ::= Heading | Paragraph | Blockquote | List | CodeBlock | ThematicBreak | HTMLBlock
-
-Heading          ::= AtxHeading | SetextHeading
-
-AtxHeading       ::= ('#'+ ' ' Inline+ Newline)
-SetextHeading    ::= Inline+ Newline (('=' | '-')+ Newline)
-
-Paragraph        ::= Inline+ Newline
-
-Blockquote       ::= ('>' ' ' Inline+ Newline)+
-
-List             ::= (ListItem)+
-ListItem         ::= ('-' | '*' | '+') ' ' Inline+ Newline
-
-CodeBlock        ::= (Indentation CodeLine Newline)+
-CodeLine         ::= (Text)*
-
-ThematicBreak    ::= ('***' | '---' | '___') Newline
-
-HTMLBlock        ::= (HTML)*
-
--------------------------------------------------
-Inline Elements
--------------------------------------------------
-Inline           ::= Emphasis | Strong | CodeSpan | Link | Image | Text
-
-Emphasis         ::= '*' Inline+ '*' | '_' Inline+ '_'
-Strong           ::= '**' Inline+ '**' | '__' Inline+ '__'
-CodeSpan         ::= '`' (CodeText)+ '`'
-
-Link             ::= '[' Inline+ ']' '(' Url ( ' ' Title )? ')'
-Image            ::= '![' Inline* ']' '(' Url ( ' ' Title )? ')'
-
-Text             ::= Any character sequence that does not form another inline element
-
--------------------------------------------------
-Terminals
--------------------------------------------------
-Newline          ::= '\n'
-Indentation      ::= ( ' ' ){4}
-Url              ::= (non-space characters)
-Title            ::= ('"' Inline+ '"') | ("'" Inline+ "'") | ('(' Inline+ ')')
-HTML             ::= '<' ... '>'   (as per HTML specification)
-
--------------------------------------------------
-Comments:
--------------------------------------------------
-- This grammar is a high-level overview and omits several details and edge cases.
-- For complete details, refer to the official CommonMark spec at:
-  https://spec.commonmark.org/
-
-===========================
+document         ::= { block }
+block            ::= code_block | paragraph
+code_block       ::= "```" [ language_specifier ]? newline? code_content newline? "```"
+language_specifier  ::= { any_character – newline }
+code_content     ::= { any_character }         (* until the closing fence *)
+newline          ::= "\n" | "\r\n"
+paragraph        ::= { inline } newline
+inline           ::= bold
+                   | italic
+                   | strike
+                   | spoiler
+                   | inline_code
+                   | emoji
+                   | link
+                   | plain_text
+bold             ::= "**" { inline } "**"
+italic           ::= "__" { inline } "__"
+strike           ::= "~~" { inline } "~~"
+spoiler          ::= "||" { inline } "||"
+inline_code      ::= "`" { non_backtick } "`"
+emoji            ::= "[" emoji_text "]" "(" "customEmoji:" digit { digit } ")"
+emoji_text       ::= { any_character – ("]" | newline) }
+link             ::= "[" link_text "]" "(" link_url ")"
+link_text        ::= { any_character – ("]" | newline) }
+link_url         ::= { character }   (* should match RE_LINK_TEMPLATE *)
+plain_text       ::= { character }   (* any text not starting a markdown token *)
+non_backtick     ::= character, but not "`"
+digit            ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"

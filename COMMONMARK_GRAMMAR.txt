@@ -1,28 +1,47 @@
-document         ::= { block }
-block            ::= code_block | paragraph
-code_block       ::= "```" [ language_specifier ]? newline? code_content newline? "```"
-language_specifier  ::= { any_character – newline }
-code_content     ::= { any_character }         (* until the closing fence *)
-newline          ::= "\n" | "\r\n"
-paragraph        ::= { inline } newline
-inline           ::= bold
-                   | italic
-                   | strike
-                   | spoiler
-                   | inline_code
-                   | emoji
-                   | link
-                   | plain_text
-bold             ::= "**" { inline } "**"
-italic           ::= "__" { inline } "__"
-strike           ::= "~~" { inline } "~~"
-spoiler          ::= "||" { inline } "||"
-inline_code      ::= "`" { non_backtick } "`"
-emoji            ::= "[" emoji_text "]" "(" "customEmoji:" digit { digit } ")"
-emoji_text       ::= { any_character – ("]" | newline) }
-link             ::= "[" link_text "]" "(" link_url ")"
-link_text        ::= { any_character – ("]" | newline) }
-link_url         ::= { character }   (* should match RE_LINK_TEMPLATE *)
-plain_text       ::= { character }   (* any text not starting a markdown token *)
-non_backtick     ::= character, but not "`"
-digit            ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<document>         ::= <block>* <EOF>
+
+<block>            ::= <code_block>
+                     | <paragraph>
+
+<code_block>       ::= CODE_FENCE
+                       <language_specifier>?
+                       <newline>?
+                       <code_content>
+                       <newline>?
+                       CODE_FENCE
+
+<language_specifier>  ::= LANGUAGE_SPECIFIER
+
+<code_content>     ::= CODE_CONTENT
+
+<paragraph>        ::= <inline>+
+
+<inline>           ::= <bold>
+                     | <italic>
+                     | <strike>
+                     | <spoiler>
+                     | <inline_code>
+                     | <link>
+                     | <emoji>
+                     | <plain_text>
+
+<bold>             ::= BOLD_MARKER <inline>+ BOLD_MARKER
+
+<italic>           ::= ITALIC_MARKER <inline>+ ITALIC_MARKER
+
+<strike>           ::= STRIKE_MARKER <inline>+ STRIKE_MARKER
+
+<spoiler>          ::= SPOILER_MARKER <inline>+ SPOILER_MARKER
+
+<inline_code>      ::= INLINE_CODE_MARKER <plain_text> INLINE_CODE_MARKER
+
+<link>             ::= LBRACKET <link_text> RBRACKET LPAREN <link_url> RPAREN
+
+<emoji>            ::= LBRACKET EMOJI_TEXT RBRACKET LPAREN CUSTOM_EMOJI_PREFIX NUMBER RPAREN
+
+<plain_text>       ::= TEXT
+
+<link_text>        ::= TEXT    /* or a sequence of TEXT nodes */
+<link_url>         ::= TEXT    /* the URL is captured as TEXT in this simplified grammar */
+
+<newline>          ::= NEWLINE

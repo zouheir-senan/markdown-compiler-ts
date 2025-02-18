@@ -37,7 +37,7 @@ describe("Full Integration: Lexer → Parser → generateHTML", () => {
         const ast = parse(tokens);
         const html = generateHTML(ast);
         // Inline code should be wrapped in a <code> tag inside a paragraph.
-        expect(html).toBe("<p><code>console.log('hi')</code></p>");
+        expect(html).toBe("<p><code>console.log(&#039;hi&#039;)</code></p>");
     });
 
     it("should process a code block", () => {
@@ -48,7 +48,7 @@ describe("Full Integration: Lexer → Parser → generateHTML", () => {
         const ast = parse(tokens);
         const html = generateHTML(ast);
         // Assuming generateHTML for a code block produces <pre><code>...</code></pre>
-        expect(html).toBe("<pre><code>console.log('Hello');</code></pre>");
+        expect(html).toBe("<pre><code>console.log(&#039;Hello&#039;);</code></pre>");
     });
 
     it("should process a link", () => {
@@ -57,7 +57,7 @@ describe("Full Integration: Lexer → Parser → generateHTML", () => {
         const ast = parse(tokens);
         const html = generateHTML(ast);
         // Our generateHTML currently wraps links in <a href="#">...</a>
-        expect(html).toBe("<p><a href=\"#\">Link</a></p>");
+        expect(html).toBe("<p><a href=\"https://example.com\">Link</a></p>");
     });
 
     it("should process an emoji", () => {
@@ -69,7 +69,7 @@ describe("Full Integration: Lexer → Parser → generateHTML", () => {
         const ast = parse(tokens);
         const html = generateHTML(ast);
         // Our generateHTML for emoji is set to return the emoji's value.
-        expect(html).toBe("<p>😊</p>");
+        expect(html).toBe("<p><span class=\"emoji\" data-emoji-id=\"12345\">😊</span></p>");
     });
 
     it("should process mixed content", () => {

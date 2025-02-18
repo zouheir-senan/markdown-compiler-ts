@@ -1,155 +1,124 @@
-// tests/generateHTML.test.ts
-import { generateHTML } from "../src/generator";
-import { ASTNode, ASTNodeType } from "../src/ast";
-import { TokenType } from "../src/tokens";
+import { generateHTML } from '../src/generator';
+import { ASTNode, ASTNodeType } from '../src/ast';
+import { TokenType } from '../src/tokens';
 
-describe("generateHTML", () => {
-    it("generates HTML for a plain text node", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.plain_text,
-            children: [],
-            value: "Hello, world!",
-        };
-        const html = generateHTML(ast);
-        expect(html).toBe("Hello, world!");
-    });
-
-    it("generates HTML for a paragraph", () => {
-        const ast: ASTNode = {
+describe('HTML Generator', () => {
+    test('skips empty paragraphs', () => {
+        const emptyParagraph: ASTNode = {
             type: ASTNodeType.paragraph,
             children: [
-                {
-                    type: ASTNodeType.plain_text,
-                    children: [],
-                    value: "This is a paragraph.",
-                },
-            ],
+                { type: ASTNodeType.plain_text, value: '', children: [] }
+            ]
         };
-        const html = generateHTML(ast);
-        expect(html).toBe("<p>This is a paragraph.</p>");
+
+        expect(generateHTML(emptyParagraph)).toBe('');
     });
 
-    it("generates HTML for bold text", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.bold,
+    test('skips whitespace-only paragraphs', () => {
+        const whitespaceOnlyParagraph: ASTNode = {
+            type: ASTNodeType.paragraph,
             children: [
-                { type: TokenType.BOLD_MARKER, children: [], value: "**" },
-                { type: ASTNodeType.plain_text, children: [], value: "Bold Text" },
-                { type: TokenType.BOLD_MARKER, children: [], value: "**" },
-            ],
+                { type: ASTNodeType.plain_text, value: '   \n\t  ', children: [] }
+            ]
         };
-        const html = generateHTML(ast);
-        expect(html).toBe("<strong>Bold Text</strong>");
+
+        expect(generateHTML(whitespaceOnlyParagraph)).toBe('');
     });
 
-    it("generates HTML for italic text", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.italic,
-            children: [
-                { type: TokenType.ITALIC_MARKER, children: [], value: "*" },
-                { type: ASTNodeType.plain_text, children: [], value: "Italic Text" },
-                { type: TokenType.ITALIC_MARKER, children: [], value: "*" },
-            ],
-        };
-        const html = generateHTML(ast);
-        expect(html).toBe("<em>Italic Text</em>");
-    });
-
-    it("generates HTML for inline code", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.inline_code,
-            children: [
-                { type: TokenType.INLINE_CODE_MARKER, children: [], value: "`" },
-                { type: ASTNodeType.plain_text, children: [], value: "console.log('hi')" },
-                { type: TokenType.INLINE_CODE_MARKER, children: [], value: "`" },
-            ],
-        };
-        const html = generateHTML(ast);
-        expect(html).toBe("<code>console.log('hi')</code>");
-    });
-
-    it("generates HTML for a link", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.link,
-            children: [
-                { type: TokenType.LBRACKET, children: [], value: "[" },
-                { type: ASTNodeType.plain_text, children: [], value: "Link" },
-                { type: TokenType.RPAREN, children: [], value: ")" },
-            ],
-        };
-        const html = generateHTML(ast);
-        expect(html).toBe('<a href="#">Link</a>');
-    });
-
-    it("generates HTML for an emoji", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.emoji,
-            children: [
-                { type: TokenType.LBRACKET, children: [], value: "[" },
-                { type: ASTNodeType.emoji, children: [], value: "😊" },
-                { type: TokenType.RPAREN, children: [], value: ")" },
-            ],
-        };
-        const html = generateHTML(ast);
-        // In our generateHTML, for emoji we return its value.
-        expect(html).toBe("😊");
-    });
-
-    it("generates HTML for a code block", () => {
-        const ast: ASTNode = {
+    test('handles code blocks with language specifiers', () => {
+        const codeBlockWithLanguage: ASTNode = {
             type: ASTNodeType.code_block,
             children: [
-                { type: TokenType.CODE_FENCE, children: [], value: "```" },
-                {
-                    type: ASTNodeType.code_content,
-                    children: [],
-                    value: "console.log('Hello');",
-                },
-                { type: TokenType.CODE_FENCE, children: [], value: "```" },
-            ],
+                { type: TokenType.CODE_FENCE, value: '```', children: [] },
+                { type: ASTNodeType.language_specifier, value: 'javascript', children: [] },
+                { type: ASTNodeType.code_content, value: 'const x = 42;', children: [] },
+                { type: TokenType.CODE_FENCE, value: '```', children: [] }
+            ]
         };
-        const html = generateHTML(ast);
-        expect(html).toBe("<pre><code>console.log('Hello');</code></pre>");
+
+        expect(generateHTML(codeBlockWithLanguage)).toBe(
+            '<pre><code class="language-javascript">const x = 42;</code></pre>'
+        );
     });
 
-    it("generates HTML for a document with multiple blocks", () => {
-        const ast: ASTNode = {
-            type: ASTNodeType.document,
+    test('escapes HTML in code blocks', () => {
+        const codeWithHtml: ASTNode = {
+            type: ASTNodeType.code_block,
             children: [
-                {
-                    type: ASTNodeType.block,
-                    children: [
-                        {
-                            type: ASTNodeType.paragraph,
-                            children: [
-                                {
-                                    type: ASTNodeType.plain_text,
-                                    children: [],
-                                    value: "Hello, world!",
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    type: ASTNodeType.block,
-                    children: [
-                        {
-                            type: ASTNodeType.paragraph,
-                            children: [
-                                {
-                                    type: ASTNodeType.plain_text,
-                                    children: [],
-                                    value: "Another paragraph.",
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
+                { type: TokenType.CODE_FENCE, value: '```', children: [] },
+                { type: ASTNodeType.code_content, value: '<div>test</div>', children: [] },
+                { type: TokenType.CODE_FENCE, value: '```', children: [] }
+            ]
         };
 
-        const html = generateHTML(ast);
-        expect(html).toBe("<p>Hello, world!</p><p>Another paragraph.</p>");
+        expect(generateHTML(codeWithHtml)).toBe(
+            '<pre><code>&lt;div&gt;test&lt;/div&gt;</code></pre>'
+        );
+    });
+
+    test('properly handles links', () => {
+        const linkNode: ASTNode = {
+            type: ASTNodeType.link,
+            children: [
+                { type: TokenType.LBRACKET, value: '[', children: [] },
+                { type: ASTNodeType.plain_text, value: 'Example Link', children: [] },
+                { type: TokenType.RBRACKET, value: ']', children: [] },
+                { type: TokenType.LPAREN, value: '(', children: [] },
+                { type: ASTNodeType.plain_text, value: 'https://example.com', children: [] },
+                { type: TokenType.RPAREN, value: ')', children: [] }
+            ]
+        };
+
+        expect(generateHTML(linkNode)).toBe(
+            '<a href="https://example.com">Example Link</a>'
+        );
+    });
+
+    test('renders emojis with data attributes', () => {
+        const emojiNode: ASTNode = {
+            type: ASTNodeType.emoji,
+            children: [
+                { type: TokenType.LBRACKET, value: '[', children: [] },
+                { type: TokenType.EMOJI_TEXT, value: 'smile', children: [] },
+                { type: TokenType.RBRACKET, value: ']', children: [] },
+                { type: TokenType.LPAREN, value: '(', children: [] },
+                { type: TokenType.CUSTOM_EMOJI_PREFIX, value: 'emoji:', children: [] },
+                { type: TokenType.NUMBER, value: '123456', children: [] },
+                { type: TokenType.RPAREN, value: ')', children: [] }
+            ]
+        };
+
+        expect(generateHTML(emojiNode)).toBe(
+            '<span class="emoji" data-emoji-id="123456">smile</span>'
+        );
+    });
+
+    test('handles nested formatting', () => {
+        const nestedFormatting: ASTNode = {
+            type: ASTNodeType.paragraph,
+            children: [
+                { type: ASTNodeType.plain_text, value: 'Text with ', children: [] },
+                {
+                    type: ASTNodeType.bold,
+                    children: [
+                        { type: TokenType.BOLD_MARKER, value: '**', children: [] },
+                        { type: ASTNodeType.plain_text, value: 'bold and ', children: [] },
+                        {
+                            type: ASTNodeType.italic,
+                            children: [
+                                { type: TokenType.ITALIC_MARKER, value: '__', children: [] },
+                                { type: ASTNodeType.plain_text, value: 'italic', children: [] },
+                                { type: TokenType.ITALIC_MARKER, value: '__', children: [] }
+                            ]
+                        },
+                        { type: TokenType.BOLD_MARKER, value: '**', children: [] }
+                    ]
+                }
+            ]
+        };
+
+        expect(generateHTML(nestedFormatting)).toBe(
+            '<p>Text with <strong>bold and <em>italic</em></strong></p>'
+        );
     });
 });
